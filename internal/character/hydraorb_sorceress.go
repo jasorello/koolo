@@ -11,6 +11,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/data/state"
 	"github.com/hectorgimenez/koolo/internal/action/step"
+	"github.com/hectorgimenez/koolo/internal/character/core"
 	"github.com/hectorgimenez/koolo/internal/game"
 )
 
@@ -21,7 +22,7 @@ const (
 )
 
 type HydraOrbSorceress struct {
-	BaseCharacter
+	core.BaseCharacter
 }
 
 func (s HydraOrbSorceress) CheckKeyBindings() []skill.ID {
@@ -68,7 +69,7 @@ func (s HydraOrbSorceress) KillMonsterSequence(
 			completedAttackLoops = 0
 		}
 
-		if !s.preBattleChecks(id, skipOnImmunities) {
+		if !s.PreBattleChecks(id, skipOnImmunities) {
 			return nil
 		}
 
@@ -189,7 +190,7 @@ func (s HydraOrbSorceress) KillCouncil() error {
 }
 
 func (s HydraOrbSorceress) KillMephisto() error {
-	return s.killMonsterByName(npc.Mephisto, data.MonsterTypeUnique, blizzMaxDistance, true, nil)
+	return s.killMonsterByName(npc.Mephisto, data.MonsterTypeUnique, ho_sorceressMaxDistance, true, nil)
 }
 
 func (s HydraOrbSorceress) KillIzual() error {

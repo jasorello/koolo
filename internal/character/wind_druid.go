@@ -12,6 +12,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/data/state"
 	"github.com/hectorgimenez/koolo/internal/action/step"
+	"github.com/hectorgimenez/koolo/internal/character/core"
 	"github.com/hectorgimenez/koolo/internal/game"
 	"github.com/hectorgimenez/koolo/internal/utils"
 )
@@ -23,7 +24,7 @@ const (
 )
 
 type WindDruid struct {
-	BaseCharacter
+	core.BaseCharacter
 	*game.HID
 }
 
@@ -60,7 +61,7 @@ func (s WindDruid) KillMonsterSequence(
 			completedAttackLoops = 0
 		}
 
-		if !s.preBattleChecks(id, skipOnImmunities) {
+		if !s.PreBattleChecks(id, skipOnImmunities) {
 			return nil
 		}
 

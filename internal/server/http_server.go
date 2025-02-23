@@ -801,12 +801,23 @@ func (s *HttpServer) characterSettings(w http.ResponseWriter, r *http.Request) {
 			cfg.Character.BerserkerBarb.FindItemSwitch = r.Form.Has("characterFindItemSwitch")
 		}
 
-		// Blizzard Sorceress specific options
-		if cfg.Character.Class == "sorceress" {
-			cfg.Character.BlizzardSorceress.BossStaticThreshold, _ = strconv.Atoi(r.Form.Get("blizzardBossStaticThreshold"))
-			cfg.Character.BlizzardSorceress.MaxAttacksLoop, _ = strconv.Atoi(r.Form.Get("blizzardMaxAttacksLoop"))
-			cfg.Character.BlizzardSorceress.StaticFieldMinDist, _ = strconv.Atoi(r.Form.Get("blizzardStaticFieldMinDist"))
-			cfg.Character.BlizzardSorceress.StaticFieldMaxDist, _ = strconv.Atoi(r.Form.Get("blizzardStaticFieldMaxDist"))
+		// Core Sorceress options
+		if slices.Contains([]string{
+			"sorceress", // Blizzard Sorceress
+		}, cfg.Character.Class) {
+			cfg.Character.Sorceress.MaxAttacksLoop, _ = strconv.Atoi(r.Form.Get("sorcMaxAttacksLoop"))
+
+			cfg.Character.Sorceress.LeftSkillMinDist, _ = strconv.Atoi(r.Form.Get("sorcLeftSkillMinDist"))
+			cfg.Character.Sorceress.LeftSkillMaxDist, _ = strconv.Atoi(r.Form.Get("sorcLeftSkillMaxDist"))
+
+			cfg.Character.Sorceress.RightSkillMinDist, _ = strconv.Atoi(r.Form.Get("sorcRightSkillMinDist"))
+			cfg.Character.Sorceress.RightSkillMinDist, _ = strconv.Atoi(r.Form.Get("sorcRighttSkillMaxDist"))
+
+			cfg.Character.Sorceress.UseStaticField = r.Form.Has("sorcUseStaticField")
+
+			cfg.Character.Sorceress.BossStaticThreshold, _ = strconv.Atoi(r.Form.Get("blizzardBossStaticThreshold"))
+			cfg.Character.Sorceress.StaticFieldMinDist, _ = strconv.Atoi(r.Form.Get("blizzardStaticFieldMinDist"))
+			cfg.Character.Sorceress.StaticFieldMaxDist, _ = strconv.Atoi(r.Form.Get("blizzardStaticFieldMaxDist"))
 		}
 
 		// Nova Sorceress specific options

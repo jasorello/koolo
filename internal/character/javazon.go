@@ -11,6 +11,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/koolo/internal/action/step"
+	"github.com/hectorgimenez/koolo/internal/character/core"
 	"github.com/hectorgimenez/koolo/internal/game"
 	"github.com/hectorgimenez/koolo/internal/pather"
 )
@@ -22,7 +23,7 @@ const (
 )
 
 type Javazon struct {
-	BaseCharacter
+	core.BaseCharacter
 }
 
 func (s Javazon) CheckKeyBindings() []skill.ID {
@@ -59,7 +60,7 @@ func (s Javazon) KillMonsterSequence(
 			completedAttackLoops = 0
 		}
 
-		if !s.preBattleChecks(id, skipOnImmunities) {
+		if !s.PreBattleChecks(id, skipOnImmunities) {
 			return nil
 		}
 
@@ -114,7 +115,7 @@ func (s Javazon) KillBossSequence(
 			completedAttackLoops = 0
 		}
 
-		if !s.preBattleChecks(id, skipOnImmunities) {
+		if !s.PreBattleChecks(id, skipOnImmunities) {
 			return nil
 		}
 

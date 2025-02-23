@@ -2,16 +2,14 @@ package character
 
 import (
 	"fmt"
-	"log/slog"
 	"strings"
 
-	"github.com/hectorgimenez/d2go/pkg/data"
-	"github.com/hectorgimenez/d2go/pkg/data/stat"
+	"github.com/hectorgimenez/koolo/internal/character/core"
 	"github.com/hectorgimenez/koolo/internal/context"
 )
 
 func BuildCharacter(ctx *context.Context) (context.Character, error) {
-	bc := BaseCharacter{
+	bc := core.BaseCharacter{
 		Context: ctx,
 	}
 
@@ -56,23 +54,4 @@ func BuildCharacter(ctx *context.Context) (context.Character, error) {
 	}
 
 	return nil, fmt.Errorf("class %s not implemented", ctx.CharacterCfg.Character.Class)
-}
-
-type BaseCharacter struct {
-	*context.Context
-}
-
-func (bc BaseCharacter) preBattleChecks(id data.UnitID, skipOnImmunities []stat.Resist) bool {
-	monster, found := bc.Data.Monsters.FindByID(id)
-	if !found {
-		return false
-	}
-	for _, i := range skipOnImmunities {
-		if monster.IsImmune(i) {
-			bc.Logger.Info("Monster is immune! skipping", slog.String("immuneTo", string(i)))
-			return false
-		}
-	}
-
-	return true
 }

@@ -12,12 +12,13 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/koolo/internal/action/step"
+	"github.com/hectorgimenez/koolo/internal/character/core"
 	"github.com/hectorgimenez/koolo/internal/context"
 	"github.com/hectorgimenez/koolo/internal/game"
 )
 
 type SorceressLeveling struct {
-	BaseCharacter
+	core.BaseCharacter
 }
 
 const (
@@ -60,7 +61,7 @@ func (s SorceressLeveling) KillMonsterSequence(
 			completedAttackLoops = 0
 		}
 
-		if !s.preBattleChecks(id, skipOnImmunities) {
+		if !s.PreBattleChecks(id, skipOnImmunities) {
 			return nil
 		}
 

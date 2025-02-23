@@ -11,6 +11,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/data/state"
 	"github.com/hectorgimenez/koolo/internal/action/step"
+	"github.com/hectorgimenez/koolo/internal/character/core"
 	"github.com/hectorgimenez/koolo/internal/game"
 )
 
@@ -23,7 +24,7 @@ const (
 )
 
 type FireballSorceress struct {
-	BaseCharacter
+	core.BaseCharacter
 }
 
 func (f FireballSorceress) CheckKeyBindings() []skill.ID {
@@ -76,7 +77,7 @@ func (f FireballSorceress) KillMonsterSequence(
 			completedAttackLoops = 0
 		}
 
-		if !f.preBattleChecks(id, skipOnImmunities) {
+		if !f.PreBattleChecks(id, skipOnImmunities) {
 			return nil
 		}
 

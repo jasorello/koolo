@@ -14,6 +14,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/data/state"
 	"github.com/hectorgimenez/koolo/internal/action/step"
+	"github.com/hectorgimenez/koolo/internal/character/core"
 	"github.com/hectorgimenez/koolo/internal/context"
 	"github.com/hectorgimenez/koolo/internal/game"
 )
@@ -28,7 +29,7 @@ const (
 )
 
 type Foh struct {
-	BaseCharacter
+	core.BaseCharacter
 	lastCastTime time.Time
 }
 
@@ -152,7 +153,7 @@ func (f Foh) KillMonsterSequence(monsterSelector func(d game.Data) (data.UnitID,
 			continue
 		}
 
-		if !f.preBattleChecks(currentTargetID, skipOnImmunities) {
+		if !f.PreBattleChecks(currentTargetID, skipOnImmunities) {
 			return nil
 		}
 
@@ -257,7 +258,7 @@ func (f Foh) KillBossSequence(monsterSelector func(d game.Data) (data.UnitID, bo
 		if !found {
 			return nil
 		}
-		if !f.preBattleChecks(id, skipOnImmunities) {
+		if !f.PreBattleChecks(id, skipOnImmunities) {
 			return nil
 		}
 		monster, found := f.Data.Monsters.FindByID(id)

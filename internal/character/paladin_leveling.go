@@ -13,6 +13,7 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/npc"
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
+	"github.com/hectorgimenez/koolo/internal/character/core"
 )
 
 const (
@@ -20,7 +21,7 @@ const (
 )
 
 type PaladinLeveling struct {
-	BaseCharacter
+	core.BaseCharacter
 }
 
 func (s PaladinLeveling) CheckKeyBindings() []skill.ID {
@@ -56,7 +57,7 @@ func (s PaladinLeveling) KillMonsterSequence(
 			completedAttackLoops = 0
 		}
 
-		if !s.preBattleChecks(id, skipOnImmunities) {
+		if !s.PreBattleChecks(id, skipOnImmunities) {
 			return nil
 		}
 

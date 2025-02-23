@@ -12,12 +12,13 @@ import (
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
 	"github.com/hectorgimenez/d2go/pkg/data/state"
 	"github.com/hectorgimenez/koolo/internal/action/step"
+	"github.com/hectorgimenez/koolo/internal/character/core"
 	"github.com/hectorgimenez/koolo/internal/context"
 	"github.com/hectorgimenez/koolo/internal/game"
 )
 
 type MosaicSin struct {
-	BaseCharacter
+	core.BaseCharacter
 }
 
 func (s MosaicSin) CheckKeyBindings() []skill.ID {
@@ -71,7 +72,7 @@ func (s MosaicSin) KillMonsterSequence(
 			return nil
 		}
 
-		if !s.preBattleChecks(id, skipOnImmunities) {
+		if !s.PreBattleChecks(id, skipOnImmunities) {
 			return nil
 		}
 
