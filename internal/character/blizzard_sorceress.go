@@ -19,6 +19,7 @@ import (
 type BlizzardSorceress struct {
 	core.BaseCharacter
 	core.Sorceress
+	core.SorceressImplementation
 }
 
 func (s BlizzardSorceress) CheckKeyBindings() []skill.ID {
@@ -61,6 +62,7 @@ func (s BlizzardSorceress) KillMonsterSequence(
 		}
 
 		if completedAttackLoops >= ctx.CharacterCfg.Character.Sorceress.MaxAttacksLoop {
+			s.Logger.Info("Exceeded max attack loops", slog.String("completedAttackLoops", fmt.Sprintf("%v", completedAttackLoops)))
 			return nil
 		}
 

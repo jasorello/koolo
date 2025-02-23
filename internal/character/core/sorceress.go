@@ -14,8 +14,17 @@ import (
 	"github.com/hectorgimenez/koolo/internal/game"
 )
 
+type SorceressImplementation interface {
+	// GetMissingKeyBindings(additionalRequiredSkills []skill.ID) []skill.ID
+	KillMonsterSequence(
+		monsterSelector func(d game.Data) (data.UnitID, bool),
+		skipOnImmunities []stat.Resist,
+	) error
+}
+
 type Sorceress struct {
 	BaseCharacter
+	// SorceressImplementation
 }
 
 /*
@@ -56,12 +65,14 @@ func (s Sorceress) GetMissingKeyBindings(additionalRequiredSkills []skill.ID) []
 	missingKeybindings := []skill.ID{}
 
 	for _, cskill := range requireKeybindings {
-		if _, found := s.Data.KeyBindings.KeyBindingForSkill(cskill); !found {
+		// if _, found := s.Data.KeyBindings.KeyBindingForSkill(cskill); !found {
+		if _, found := ctx.Data.KeyBindings.KeyBindingForSkill(cskill); !found {
+
 			switch cskill {
 			// Since we can have one of 3 armors:
 			case skill.ShiverArmor:
-				_, found1 := s.Data.KeyBindings.KeyBindingForSkill(skill.FrozenArmor)
-				_, found2 := s.Data.KeyBindings.KeyBindingForSkill(skill.ChillingArmor)
+				_, found1 := ctx.Data.KeyBindings.KeyBindingForSkill(skill.FrozenArmor)
+				_, found2 := ctx.Data.KeyBindings.KeyBindingForSkill(skill.ChillingArmor)
 				if !found1 && !found2 {
 					missingKeybindings = append(missingKeybindings, skill.ShiverArmor)
 				}
@@ -79,14 +90,16 @@ func (s Sorceress) GetMissingKeyBindings(additionalRequiredSkills []skill.ID) []
 }
 
 func (s Sorceress) BuffSkills() []skill.ID {
+	ctx := context.Get()
+
 	skillsList := make([]skill.ID, 0)
-	if _, found := s.Data.KeyBindings.KeyBindingForSkill(skill.EnergyShield); found {
+	if _, found := ctx.Data.KeyBindings.KeyBindingForSkill(skill.EnergyShield); found {
 		skillsList = append(skillsList, skill.EnergyShield)
 	}
 
 	armors := []skill.ID{skill.ChillingArmor, skill.ShiverArmor, skill.FrozenArmor}
 	for _, armor := range armors {
-		if _, found := s.Data.KeyBindings.KeyBindingForSkill(armor); found {
+		if _, found := ctx.Data.KeyBindings.KeyBindingForSkill(armor); found {
 			skillsList = append(skillsList, armor)
 			return skillsList
 		}
@@ -99,6 +112,7 @@ func (s Sorceress) KillMonsterSequence(
 	monsterSelector func(d game.Data) (data.UnitID, bool),
 	skipOnImmunities []stat.Resist,
 ) error {
+	s.Logger.Error("in unimplemented KillMonsterSequence")
 	panic("This should be implemented")
 }
 
@@ -116,7 +130,7 @@ func (s Sorceress) killMonsterWithStatic(bossID npc.ID, monsterType data.Monster
 	ctx := context.Get()
 
 	for {
-		boss, found := s.Data.Monsters.FindOne(bossID, monsterType)
+		boss, found := ctx.Data.Monsters.FindOne(bossID, monsterType)
 		if !found || boss.Stats[stat.Life] <= 0 {
 			return nil
 		}
@@ -135,6 +149,8 @@ func (s Sorceress) killMonsterWithStatic(bossID npc.ID, monsterType data.Monster
 			}
 			continue
 		}
+
+		s.Logger.Warn("Time... to die")
 
 		// Switch to primary skill once boss HP is low enough
 		return s.KillMonsterSequence(func(d game.Data) (data.UnitID, bool) {
@@ -224,7 +240,7 @@ func (s Sorceress) KillDiablo() error {
 			return nil
 		}
 
-		diablo, found := s.Data.Monsters.FindOne(npc.Diablo, data.MonsterTypeUnique)
+		diablo, found := ctx.Data.Monsters.FindOne(npc.Diablo, data.MonsterTypeUnique)
 		if !found || diablo.Stats[stat.Life] <= 0 {
 			// Already dead
 			if diabloFound {

@@ -56,6 +56,7 @@ func (m Mephisto) Run() error {
 	m.ctx.DisableItemPickup()
 
 	// Kill Mephisto
+	m.ctx.Logger.Info("Killing Mephisto")
 	err = m.ctx.Char.KillMephisto()
 
 	// Enable item pickup after the fight
