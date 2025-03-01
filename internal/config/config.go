@@ -244,10 +244,12 @@ type CharacterCfg struct {
 		Items   []item.Name `yaml:"items"`
 	} `yaml:"gambling"`
 	CubeRecipes struct {
-		Enabled              bool     `yaml:"enabled"`
-		EnabledRecipes       []string `yaml:"enabledRecipes"`
-		SkipPerfectAmethysts bool     `yaml:"skipPerfectAmethysts"`
-		SkipPerfectRubies    bool     `yaml:"skipPerfectRubies"`
+		Enabled                       bool     `yaml:"enabled"`
+		EnabledRecipes                []string `yaml:"enabledRecipes"`
+		SkipPerfectAmethysts          bool     `yaml:"skipPerfectAmethysts"`
+		SkipPerfectRubies             bool     `yaml:"skipPerfectRubies"`
+		IncludePersonalStashForCubing bool     `yaml:"includePersonalStashForCubing"`
+		BufferRunes                   int      `yaml:"bufferRunes"`
 	} `yaml:"cubing"`
 	BackToTown struct {
 		NoHpPotions     bool `yaml:"noHpPotions"`
