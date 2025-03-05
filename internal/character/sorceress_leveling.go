@@ -97,7 +97,7 @@ func (s SorceressLeveling) KillMonsterSequence(
 					s.Logger.Debug("Using FireBall")
 				}
 				step.SecondaryAttack(skill.FireBall, id, 1, step.Distance(SorceressLevelingMinDistance, SorceressLevelingMaxDistance))
-			} else if _, found := s.Data.KeyBindings.KeyBindingForSkill(skill.IceBolt); found {
+			} else if _, found := s.Data.KeyBindings.KeyBindingForSkill(skill.FireBolt); found {
 				if s.Data.PlayerUnit.Mode == mode.CastingSkill {
 					attackSuccess = true
 					s.Logger.Debug("Using FireBolt")
