@@ -39,3 +39,28 @@ func swapWeapon(toCTA bool) error {
 		lastRun = time.Now()
 	}
 }
+
+func SwapWeaponForSkill(toSkill bool, skill skill.ID) error {
+	lastRun := time.Time{}
+
+	ctx := context.Get()
+	ctx.SetLastStep("SwapToSkill")
+
+	for {
+		// Pause the execution if the priority is not the same as the execution priority
+		ctx.PauseIfNotPriority()
+
+		if time.Since(lastRun) < time.Millisecond*500 {
+			continue
+		}
+
+		_, found := ctx.Data.PlayerUnit.Skills[skill]
+		if (toSkill && found) || (!toSkill && !found) {
+			return nil
+		}
+
+		ctx.HID.PressKeyBinding(ctx.Data.KeyBindings.SwapWeapons)
+
+		lastRun = time.Now()
+	}
+}

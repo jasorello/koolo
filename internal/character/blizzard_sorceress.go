@@ -7,6 +7,7 @@ import (
 
 	"github.com/hectorgimenez/d2go/pkg/data"
 	"github.com/hectorgimenez/d2go/pkg/data/difficulty"
+	"github.com/hectorgimenez/d2go/pkg/data/item"
 	"github.com/hectorgimenez/d2go/pkg/data/npc"
 	"github.com/hectorgimenez/d2go/pkg/data/skill"
 	"github.com/hectorgimenez/d2go/pkg/data/stat"
@@ -56,6 +57,43 @@ func (s BlizzardSorceress) CheckKeyBindings() []skill.ID {
 	}
 
 	return missingKeybindings
+}
+
+func (s BlizzardSorceress) curseMonsterIfPossible(bossID npc.ID, monsterType data.MonsterType) error {
+	// check if we have the wand on swap
+	lrFound := false
+	for _, itm := range s.Data.Inventory.ByLocation(item.LocationEquipped) {
+		_, lrFound = itm.FindStat(stat.ItemChargedSkill, 5825) //int(skill.LowerResist))
+		if lrFound {
+			break
+		}
+	}
+	if !lrFound {
+		return nil
+	}
+	_, bindingFound := s.Data.KeyBindings.KeyBindingForSkill(skill.LowerResist)
+
+	if !bindingFound {
+		return nil
+	}
+
+	boss, _ := s.Data.Monsters.FindOne(bossID, monsterType)
+
+	step.SwapWeaponForSkill(true, skill.LowerResist)
+
+	step.SecondaryAttack(
+		skill.LowerResist,
+		boss.UnitID,
+		1,
+		step.StationaryDistance(
+			s.attackConfig()["blizzardMinimumDistance"],
+			s.attackConfig()["blizzardMaximumDistance"],
+		),
+	)
+
+	step.SwapWeaponForSkill(false, skill.LowerResist)
+
+	return nil
 }
 
 func (s BlizzardSorceress) killMonsterWithStatic(bossID npc.ID, monsterType data.MonsterType) error {
@@ -244,6 +282,7 @@ func (s BlizzardSorceress) KillCouncil() error {
 }
 
 func (s BlizzardSorceress) KillMephisto() error {
+	s.curseMonsterIfPossible(npc.Mephisto, data.MonsterTypeUnique)
 	return s.killMonsterWithStatic(npc.Mephisto, data.MonsterTypeUnique)
 }
 
