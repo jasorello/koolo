@@ -84,6 +84,17 @@ func RepairRequired() bool {
 func ItemNeedsRepair(item data.Item) bool {
 	// Checking for item charges should occur before the eth/indestructible check
 
+	/*
+
+			stat.Data {ID: ItemChargedSkill (204), Value: 17209, Layer: 5825} <- level 1 resist, unknown level of charges (57 charges out of 67 max)
+
+		stat.Data {ID: ItemChargedSkill (204), Value: 17200, Layer: 5825}
+
+		stat.Data {ID: ItemChargedSkill (204), Value: 17152, Layer: 5825} <--- 0 charges remaining
+
+		stat.Data {ID: ItemChargedSkill (204), Value: 19275, Layer: 5826} <- level 2 resist, 75 charges, wildly different value, but layer incremented by 1, because it's level 1
+	*/
+
 	// Check for item never needing durability-based repair
 	_, indestructible := item.FindStat(stat.Indestructible, 0)
 	if item.Ethereal || indestructible {
