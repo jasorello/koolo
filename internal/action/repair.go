@@ -21,29 +21,16 @@ func Repair() error {
 	ctx.SetLastAction("Repair")
 
 	for _, i := range ctx.Data.Inventory.ByLocation(item.LocationEquipped) {
+		if ItemNeedsRepair(i) {
+			// Get the durability stats for logging
+			durability, found := i.FindStat(stat.Durability, 0)
+			maxDurability, maxDurabilityFound := i.FindStat(stat.MaxDurability, 0)
 
-		_, indestructible := i.FindStat(stat.Indestructible, 0)
-
-		if i.Ethereal || indestructible {
-			continue
-		}
-
-		// Get the durability stats
-
-		durability, found := i.FindStat(stat.Durability, 0)
-		maxDurability, maxDurabilityFound := i.FindStat(stat.MaxDurability, 0)
-
-		// Calculate Durability percent
-		durabilityPercent := -1
-
-		if maxDurabilityFound && found {
-			durabilityPercent = int((float64(durability.Value) / float64(maxDurability.Value)) * 100)
-		}
-
-		// Restructured conditionals for when to attempt repair
-		if (maxDurabilityFound && !found) ||
-			(durabilityPercent != -1 && found && durabilityPercent <= 20) ||
-			(found && durabilityPercent == -1 && durability.Value <= 2) {
+			// Calculate Durability percent
+			durabilityPercent := -1
+			if maxDurabilityFound && found {
+				durabilityPercent = int((float64(durability.Value) / float64(maxDurability.Value)) * 100)
+			}
 
 			ctx.Logger.Info(fmt.Sprintf("Repairing %s, item durability is %d percent", i.Name, durabilityPercent))
 
@@ -86,35 +73,45 @@ func RepairRequired() bool {
 	ctx.SetLastAction("RepairRequired")
 
 	for _, i := range ctx.Data.Inventory.ByLocation(item.LocationEquipped) {
-		// Skip indestructible items
-		_, indestructible := i.FindStat(stat.Indestructible, 0)
-		if i.Ethereal || indestructible {
-			continue
-		}
-
-		currentDurability, currentDurabilityFound := i.FindStat(stat.Durability, 0)
-		maxDurability, maxDurabilityFound := i.FindStat(stat.MaxDurability, 0)
-
-		// If we have both stats, check percentage
-		if currentDurabilityFound && maxDurabilityFound {
-			durabilityPercent := int((float64(currentDurability.Value) / float64(maxDurability.Value)) * 100)
-			if durabilityPercent <= 20 {
-				return true
-			}
-		}
-
-		// If we only have current durability, check absolute value
-		if currentDurabilityFound {
-			if currentDurability.Value <= 5 {
-				return true
-			}
-		}
-
-		// Handle case where durability stat is missing but max durability exists
-		// This likely indicates the item needs repair
-		if maxDurabilityFound && !currentDurabilityFound {
+		if ItemNeedsRepair(i) {
 			return true
 		}
+	}
+
+	return false
+}
+
+func ItemNeedsRepair(item data.Item) bool {
+	// Checking for item charges should occur before the eth/indestructible check
+
+	// Check for item never needing durability-based repair
+	_, indestructible := item.FindStat(stat.Indestructible, 0)
+	if item.Ethereal || indestructible {
+		return false
+	}
+
+	currentDurability, currentDurabilityFound := item.FindStat(stat.Durability, 0)
+	maxDurability, maxDurabilityFound := item.FindStat(stat.MaxDurability, 0)
+
+	// If we have both stats, check percentage
+	if currentDurabilityFound && maxDurabilityFound {
+		durabilityPercent := int((float64(currentDurability.Value) / float64(maxDurability.Value)) * 100)
+		if durabilityPercent <= 20 && durabilityPercent != -1 {
+			return true
+		}
+	}
+
+	// If we only have current durability, check absolute value
+	if currentDurabilityFound {
+		if currentDurability.Value <= 5 {
+			return true
+		}
+	}
+
+	// Handle case where durability stat is missing but max durability exists
+	// This likely indicates the item needs repair
+	if maxDurabilityFound && !currentDurabilityFound {
+		return true
 	}
 
 	return false
@@ -136,7 +133,7 @@ func IsEquipmentBroken() bool {
 		if indestructible {
 			continue
 		}
-		
+
 		// Check if the item is broken
 		if i.IsBroken {
 			ctx.Logger.Debug("Equipment is broken, returning to town", "item", i.Name)
