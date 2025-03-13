@@ -35,6 +35,7 @@ type attackSettings struct {
 	numOfAttacks     int           // Number of attacks to perform
 	timeout          time.Duration // Timeout for the attack sequence
 	isBurstCastSkill bool          // Whether this is a channeled/burst skill like Nova
+	isKiteAttack     bool          // Whether we should keep our distance when positioning for this attack
 }
 
 // AttackOption defines a function type for configuring attack settings
@@ -72,6 +73,17 @@ func StationaryDistance(minimum, maximum int) AttackOption {
 		step.minDistance = minimum
 		step.maxDistance = maximum
 		step.shouldStandStill = true
+	}
+}
+
+// TODO: mobile kite distance?
+func StationaryKiteDistance(minimum, maximum int) AttackOption {
+	return func(step *attackSettings) {
+		step.followEnemy = false
+		step.minDistance = minimum
+		step.maxDistance = maximum
+		step.shouldStandStill = true
+		step.isKiteAttack = true
 	}
 }
 
@@ -182,10 +194,10 @@ func attack(settings attackSettings) error {
 		// Check if we need to reposition if we aren't doing any damage (prevent attacking through doors etc.)
 		_, state := checkMonsterDamage(monster)
 		needsRepositioning := !state.failedAttemptStartTime.IsZero() &&
-			time.Since(state.failedAttemptStartTime) > 3*time.Second
+			time.Since(state.failedAttemptStartTime) > 2*time.Second
 
 		// Be sure we stay in range of the enemy
-		err := ensureEnemyIsInRange(monster, settings.maxDistance, settings.minDistance, needsRepositioning)
+		err := ensureEnemyIsInRange(monster, settings.maxDistance, settings.minDistance, needsRepositioning, settings.isKiteAttack)
 		if err != nil {
 			return fmt.Errorf("enemy is out of range and cannot be reached: %w", err)
 		}
@@ -218,7 +230,7 @@ func burstAttack(settings attackSettings) error {
 	}
 
 	// Initially we try to move to the enemy, later we will check for closer enemies to keep attacking
-	err := ensureEnemyIsInRange(monster, settings.maxDistance, settings.minDistance, false)
+	err := ensureEnemyIsInRange(monster, settings.maxDistance, settings.minDistance, false, settings.isKiteAttack)
 	if err != nil {
 		return fmt.Errorf("enemy is out of range and cannot be reached: %w", err)
 	}
@@ -251,7 +263,7 @@ func burstAttack(settings attackSettings) error {
 
 		// If we don't have LoS we will need to interrupt and move :(
 		if !ctx.PathFinder.LineOfSight(ctx.Data.PlayerUnit.Position, target.Position) || needsRepositioning {
-			err = ensureEnemyIsInRange(target, settings.maxDistance, settings.minDistance, needsRepositioning)
+			err = ensureEnemyIsInRange(target, settings.maxDistance, settings.minDistance, needsRepositioning, settings.isKiteAttack)
 			if err != nil {
 				return fmt.Errorf("enemy is out of range and cannot be reached: %w", err)
 			}
@@ -290,7 +302,7 @@ func performAttack(ctx *context.Status, settings attackSettings, x, y int) {
 	}
 }
 
-func ensureEnemyIsInRange(monster data.Monster, maxDistance, minDistance int, needsRepositioning bool) error {
+func ensureEnemyIsInRange(monster data.Monster, maxDistance, minDistance int, needsRepositioning bool, isKiteAttack bool) error {
 	ctx := context.Get()
 	ctx.SetLastStep("ensureEnemyIsInRange")
 
@@ -300,13 +312,14 @@ func ensureEnemyIsInRange(monster data.Monster, maxDistance, minDistance int, ne
 	hasLoS := ctx.PathFinder.LineOfSight(currentPos, monster.Position)
 
 	// We have line of sight, and we are inside the attack range, we can skip
-	if hasLoS && distanceToMonster <= maxDistance && !needsRepositioning {
+	if ((isKiteAttack && distanceToMonster > minDistance) || !isKiteAttack) &&
+		hasLoS && distanceToMonster <= maxDistance && !needsRepositioning {
 		return nil
 	}
 	// Handle repositioning if needed
 	if needsRepositioning {
 		ctx.Logger.Info(fmt.Sprintf(
-			"No damage taken by target monster [%d] in area [%s] for more than 3 seconds. Trying to re-position",
+			"No damage taken by target monster [%d] in area [%s] for more than 2 seconds. Trying to re-position",
 			monster.Name, // No mapped string value for npc names in d2go, only id
 			ctx.Data.PlayerUnit.Area.Area().Name,
 		))
@@ -338,10 +351,13 @@ func ensureEnemyIsInRange(monster data.Monster, maxDistance, minDistance int, ne
 			Y: pos.Y + ctx.Data.AreaData.OffsetY,
 		}
 
-		// Handle overshooting for short distances (Nova distances)
-		distanceToMove := ctx.PathFinder.DistanceFromMe(dest)
-		if distanceToMove <= DistanceToFinishMoving {
-			dest = ctx.PathFinder.BeyondPosition(currentPos, dest, 9)
+		// TODO: is this the telestomp?
+		if !isKiteAttack { // TODO: maybe be specific for telestomps?
+			// Handle overshooting for short distances (Nova distances)
+			distanceToMove := ctx.PathFinder.DistanceFromMe(dest)
+			if distanceToMove <= DistanceToFinishMoving {
+				dest = ctx.PathFinder.BeyondPosition(currentPos, dest, 9)
+			}
 		}
 
 		if ctx.PathFinder.LineOfSight(dest, monster.Position) {

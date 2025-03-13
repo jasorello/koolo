@@ -23,11 +23,9 @@ type BlizzardSorceress struct {
 func (s BlizzardSorceress) attackConfig() map[string]int {
 	// Avoiding constants that pollute the other characters in the package
 	return map[string]int{
-		"maxAttacksLoop":           100,
-		"leftSkillMinimumDistance": 8,
-		"leftSkillMaximumDistance": 20,
-		"blizzardMinimumDistance":  6,
-		"blizzardMaximumDistance":  15,
+		"maxAttacksLoop":    100,
+		"attackMinDistance": 8,
+		"attackMaxDistance": 16,
 	}
 }
 
@@ -86,8 +84,8 @@ func (s BlizzardSorceress) curseMonsterIfPossible(bossID npc.ID, monsterType dat
 		boss.UnitID,
 		1,
 		step.StationaryDistance(
-			s.attackConfig()["blizzardMinimumDistance"],
-			s.attackConfig()["blizzardMaximumDistance"],
+			s.attackConfig()["attackMinDistance"],
+			s.attackConfig()["attackMaxDistance"],
 		),
 	)
 
@@ -145,13 +143,9 @@ func (s BlizzardSorceress) KillMonsterSequence(
 	previousUnitID := 0
 	previousSelfBlizzard := time.Time{}
 
-	blizzOpts := step.StationaryDistance(
-		s.attackConfig()["blizzardMinimumDistance"],
-		s.attackConfig()["blizzardMaximumDistance"],
-	)
-	lsOpts := step.Distance(
-		s.attackConfig()["leftSkillMinimumDistance"],
-		s.attackConfig()["leftSkillMaximumDistance"],
+	attackOpts := step.StationaryKiteDistance(
+		s.attackConfig()["attackMinDistance"],
+		s.attackConfig()["attackMaxDistance"],
 	)
 
 	for {
@@ -175,7 +169,7 @@ func (s BlizzardSorceress) KillMonsterSequence(
 		}
 
 		for s.Data.PlayerUnit.States.HasState(state.Cooldown) && s.MonsterAliveById(id) {
-			step.PrimaryAttack(id, 1, true, lsOpts)
+			step.PrimaryAttack(id, 1, true, attackOpts)
 			actionsTakenThisLoop = append(actionsTakenThisLoop, "PrimaryAttack")
 			// Wait for the cast to complete before doing anything else
 			time.Sleep(s.Data.PlayerCastDuration() - (120 * time.Millisecond)) // stolen from internal/action/step/attack.go
@@ -188,13 +182,13 @@ func (s BlizzardSorceress) KillMonsterSequence(
 				if dist := s.PathFinder.DistanceFromMe(m.Position); dist < 4 {
 					previousSelfBlizzard = time.Now()
 					selfBlizzardThisLoop = true
-					step.SecondaryAttack(skill.Blizzard, m.UnitID, 1, blizzOpts)
+					step.SecondaryAttack(skill.Blizzard, m.UnitID, 1, attackOpts)
 					actionsTakenThisLoop = append(actionsTakenThisLoop, "selfBlizz")
 				}
 			}
 		}
 		if !selfBlizzardThisLoop && s.MonsterAliveById(id) {
-			step.SecondaryAttack(skill.Blizzard, id, 1, blizzOpts)
+			step.SecondaryAttack(skill.Blizzard, id, 1, attackOpts)
 			actionsTakenThisLoop = append(actionsTakenThisLoop, "offensiveBlizz")
 		}
 
@@ -241,7 +235,7 @@ func (s BlizzardSorceress) PreCTABuffSkills() []skill.ID {
 }
 
 func (s BlizzardSorceress) KillCountess() error {
-	return s.killMonsterByName(npc.DarkStalker, data.MonsterTypeSuperUnique, nil)
+	return s.killMonsterWithStatic(npc.DarkStalker, data.MonsterTypeSuperUnique)
 }
 
 func (s BlizzardSorceress) KillAndariel() error {
@@ -282,7 +276,7 @@ func (s BlizzardSorceress) KillCouncil() error {
 }
 
 func (s BlizzardSorceress) KillMephisto() error {
-	s.curseMonsterIfPossible(npc.Mephisto, data.MonsterTypeUnique)
+	// s.curseMonsterIfPossible(npc.Mephisto, data.MonsterTypeUnique)
 	return s.killMonsterWithStatic(npc.Mephisto, data.MonsterTypeUnique)
 }
 

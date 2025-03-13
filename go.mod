@@ -1,7 +1,7 @@
 module github.com/hectorgimenez/koolo
 
 go 1.23
-replace github.com/hectorgiminez/d2go => C:\Users\jason\code\d2go
+replace github.com/hectorgimenez/d2go => C:\Users\jason\code\d2go
 
 require (
 	github.com/billgraziano/dpapi v0.5.0
